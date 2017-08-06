@@ -1,3 +1,4 @@
+# David Crespo, 2017
 import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
@@ -7,11 +8,14 @@ class Manejador:
 	def on_boton_actualizar_clicked(self, *args):
 		databaseio.modificar()
 	def on_boton_agregar_clicked(self, *args):
-		databaseio.guarda_formulario()
+		formulario.limpiar()
+		botones.nueva_ficha()
 	def on_boton_adelante_clicked(self, *args):
+		botones.standard()
 		fila.positivo()
 		formulario.actualizar(fila.posicion_actual())
 	def on_boton_atras_clicked(self, *args):
+		botones.standard()
 		fila.negativo()
 		formulario.actualizar(fila.posicion_actual())
 	def on_boton_buscar_clicked(self, *args):
@@ -20,6 +24,9 @@ class Manejador:
 		pass
 	def on_boton_salir_clicked(self, *args):
 		Gtk.main_quit(*args)
+	def on_boton_guardar_clicked(self, *args):
+		databaseio.guarda_formulario()
+		botones.ocultar("boton_guardar")
 class Entradas:
 	def __init__(self):
 		self.entrada_nombre = constructor.get_object("entrada_nombre")
@@ -295,14 +302,62 @@ class Formulario:
 		entrada.insertar_pais(listadatos.obtener_valor((fila), "pais"))
 		entrada.insertar_registro(fila+1)
 		entrada.insertar_registros(listadatos.num_registros())
-
+	def limpiar(self):
+		entrada.insertar_nombre("")
+		entrada.insertar_apellidos("")
+		entrada.insertar_nick1("")
+		entrada.insertar_nick2("")
+		entrada.insertar_telefono("")
+		entrada.insertar_telefono2("")
+		entrada.insertar_skype("")
+		entrada.insertar_whatsapp("")
+		entrada.insertar_telegram("")
+		entrada.insertar_email("")
+		entrada.insertar_email2("")
+		entrada.insertar_calle("")
+		entrada.insertar_puerta("")
+		entrada.insertar_ciudad("")
+		entrada.insertar_provincia("")
+		entrada.insertar_pais("")
+		entrada.insertar_registro("new")
+		entrada.insertar_registros(listadatos.num_registros())
+class Botones:
+	def __init__(self):
+		self.boton = ("boton_buscar", "boton_importar", "boton_guardar", "boton_quitar", "boton_agregar", "boton_actualizar", "boton_salir")
+	def visualizar(self, botonz):
+		for i in self.boton:
+			if botonz == i:
+				boton = constructor.get_object(i)
+				boton.show()
+	def ocultar(self, botonz):
+		for i in self.boton:
+			if botonz == i:
+				boton = constructor.get_object(i)
+				boton.hide()
+	def standard(self):
+		activos=("boton_quitar", "boton_agregar", "boton_actualizar", "boton_salir")
+		inactivos=("boton_buscar", "boton_importar", "boton_guardar")
+		for i in activos:
+			boton = constructor.get_object(i)
+			boton.show()
+		for i in inactivos:
+			boton = constructor.get_object(i)
+			boton.hide()
+	def nueva_ficha(self):
+		activos=("boton_guardar", "boton_salir")
+		inactivos=("boton_buscar", "boton_importar", "boton_actualizar", "boton_quitar", "boton_agregar")
+		for i in activos:
+			boton = constructor.get_object(i)
+			boton.show()
+		for i in inactivos:
+			boton = constructor.get_object(i)
+			boton.hide()
 constructor = Gtk.Builder()
 constructor.add_from_file("listin.glade")
 constructor.connect_signals(Manejador())
 ventana = constructor.get_object("ficha")
-boton_buscar = constructor.get_object("boton_buscar")
-boton_importar = constructor.get_object("boton_importar")
 fila = Posicion()
+botones = Botones()
 nombre_database = "basedatos.dat"
 database = Fichero(nombre_database)
 databaseio = IO_dbf()
@@ -319,8 +374,7 @@ for i in (constructor.get_objects()):
 	log.escribir(str(i))
 log.escribir("Accediendo a la base de datos.")
 databaseio.carga()
-ventana.show_all()
-boton_buscar.hide()
-boton_importar.hide()
+ventana.show()
+botones.standard()
 Gtk.main()
 
